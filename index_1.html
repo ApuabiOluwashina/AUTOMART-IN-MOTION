@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AutoMart IM | Roadside Repairer Network</title>
+<link rel="icon" href="assets/automart-logo.png" />
+<style>
+  :root{--navy:#0a2158;--navy-dark:#061437;--ink:#1a1a2e;--muted:#6b7280;--bg:#f3f5fb;--card:#fff;--border:#e2e6f0;--gold:#e0a638;}
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  .wrap{max-width:820px;padding:40px 20px;text-align:center;}
+  .logo{max-width:340px;width:80%;margin-bottom:18px;}
+  p.sub{color:var(--muted);margin-top:0;font-size:1rem;}
+  .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:30px;}
+  a.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 16px;text-decoration:none;color:var(--ink);box-shadow:0 8px 24px rgba(10,33,88,.07);transition:transform .15s;}
+  a.card:hover{transform:translateY(-3px);}
+  a.card .emoji{font-size:2rem;}
+  a.card .title{font-weight:700;margin-top:10px;color:var(--navy);}
+  a.card .desc{font-size:.82rem;color:var(--muted);margin-top:6px;}
+  footer{margin-top:34px;color:var(--muted);font-size:.78rem;}
+  @media (max-width:640px){.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img class="logo" src="assets/automart-logo.png" alt="AutoMart IM" />
+    <p class="sub">Connecting drivers with nearby auto-repair shops in real time.</p>
+    <div class="cards">
+      <a class="card" href="map.html">
+        <div class="emoji">🗺️</div>
+        <div class="title">Find a Repairer</div>
+        <div class="desc">For car owners — see nearby shops on a map during a breakdown.</div>
+      </a>
+      <a class="card" href="signup.html">
+        <div class="emoji">📝</div>
+        <div class="title">Repairer Sign-Up</div>
+        <div class="desc">For auto-repair shops — register your location to join the network.</div>
+      </a>
+      <a class="card" href="admin.html">
+        <div class="emoji">🛠️</div>
+        <div class="title">AutoMart IM Admin</div>
+        <div class="desc">Internal — review, approve, and manage sign-ups.</div>
+      </a>
+    </div>
+    <footer>AutoMart IM &middot; Powered by Google Sheets</footer>
+  </div>
+</body>
+</html>
