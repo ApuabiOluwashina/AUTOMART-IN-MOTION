@@ -1,4 +1,4 @@
-# CredPal Roadside Repairer Network
+# AutoMart IM Roadside Repairer Network
 
 A small platform that lets auto-repair shops register their location, and
 lets drivers find the nearest one on a map during a breakdown — with
@@ -12,7 +12,7 @@ from both the app and the Sheet directly.
 | `Code.gs`     | Google Apps Script backend — read/write to the Sheet, deployed as a Web App (your "server"). |
 | `signup.html` | Public page where auto-repairers register (name, phone, address → geocoded to lat/lng, services). |
 | `map.html`    | Public page for car owners — Leaflet/OpenStreetMap view of all **approved** repairers, with "Use my location" to sort by distance and get driving directions. |
-| `admin.html`  | Internal CredPal dashboard — **card gallery** (photo/logo, brand name, location, star rating) plus table and map views of all sign-ups; click any repairer for a full detail panel to approve/reject, edit, rate, or delete. Protected by an admin key. |
+| `admin.html`  | Internal AutoMart dashboard — **card gallery** (photo/logo, brand name, location, star rating) plus table and map views of all sign-ups; click any repairer for a full detail panel to approve/reject, edit, rate, or delete. Protected by an admin key. |
 | `index.html`  | Simple landing page linking to the three pages above. |
 
 No build step, no framework — plain HTML/CSS/JavaScript. Maps are rendered
@@ -22,7 +22,7 @@ no Google Maps API key or billing account required.
 ## How it fits together
 
 ```
- Repairer's phone/laptop          Car owner's phone/laptop         CredPal team
+ Repairer's phone/laptop          Car owner's phone/laptop         AutoMart team
  ┌───────────────┐                ┌───────────────┐                ┌───────────────┐
  │  signup.html  │──POST signup──▶│                │                │   admin.html  │
  └───────────────┘                │                │                └───────┬───────┘
@@ -71,7 +71,7 @@ it immediately on next load.
 3. Set your admin password: **Project Settings** (gear icon, left sidebar) →
    **Script properties** → **Add script property**
    - Property: `ADMIN_KEY`
-   - Value: any long random string, e.g. `credpal-repair-2026-9x7Q`
+   - Value: any long random string, e.g. `AutoMart-repair-2026-9x7Q`
 
    This is the password your team will type into `admin.html` to approve or
    edit sign-ups. Anyone without it can only submit sign-ups or view approved
