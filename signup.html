@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auto-Repairer Sign-Up | AutoMart IM</title>
+<link rel="icon" href="assets/automart-logo.png" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+  :root{
+    --navy:#002060; --navy-dark:#00133d; --ink:#1a1a2e; --muted:#6b7280;
+    --bg:#eef1fa; --card:#ffffff; --border:#dfe3f0; --good:#1f9d55; --warn:#c2410c; --gold:#e0a638;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  .brand-bar{background:var(--navy);padding:14px 20px;border-bottom:1px solid var(--border);text-align:center;}
+  .brand-bar img{height:56px;}
+  header{background:linear-gradient(120deg,var(--navy),var(--navy-dark));color:#fff;padding:26px 20px;text-align:center;}
+  header h1{margin:0 0 6px;font-size:1.4rem;}
+  header p{margin:0;opacity:.9;font-size:.95rem;}
+  .wrap{max-width:640px;margin:-20px auto 40px;padding:0 16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:0 8px 24px rgba(10,33,88,.08);}
+  .card + .card{margin-top:18px;}
+  label{display:block;font-weight:600;font-size:.85rem;margin:14px 0 6px;}
+  label.req::after{content:" *";color:var(--warn);}
+  input[type=text], input[type=tel], input[type=email], input[type=url], input[type=file], textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;background:#fbfaff;
+  }
+  input[type=file]{padding:8px;background:#fff;}
+  input:focus, textarea:focus{outline:2px solid var(--navy);outline-offset:1px;}
+  .row{display:flex;gap:10px;}
+  .row > div{flex:1;}
+  .services{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;}
+  .services label{display:flex;align-items:center;gap:8px;font-weight:500;margin:0;font-size:.9rem;}
+  .services input{width:auto;}
+  .locate-row{display:flex;gap:8px;margin-top:8px;}
+  button{cursor:pointer;border:none;border-radius:8px;font-weight:600;font-family:inherit;}
+  .btn-primary{background:var(--navy);color:#fff;padding:12px 18px;font-size:1rem;width:100%;margin-top:20px;}
+  .btn-primary:disabled{background:#9aa7c4;cursor:not-allowed;}
+  .btn-secondary{background:#eef1fa;color:var(--navy);padding:9px 14px;font-size:.85rem;white-space:nowrap;}
+  #map{height:260px;border-radius:10px;margin-top:12px;border:1px solid var(--border);display:none;}
+  .hint{font-size:.78rem;color:var(--muted);margin-top:4px;}
+  .status-box{margin-top:16px;padding:12px 14px;border-radius:10px;font-size:.9rem;display:none;}
+  .status-box.ok{background:#e8f8ee;color:var(--good);display:block;}
+  .status-box.err{background:#fdeceb;color:#b91c1c;display:block;}
+  .status-box.pending{background:#eef2ff;color:#3730a3;display:block;}
+  .logo-preview{display:none;max-width:160px;max-height:160px;border-radius:10px;margin-top:10px;border:1px solid var(--border);object-fit:cover;}
+  .or-divider{font-size:.78rem;color:var(--muted);margin:10px 0 4px;}
+  footer{text-align:center;color:var(--muted);font-size:.78rem;padding:20px;}
+</style>
+</head>
+<body>
+
+<div class="brand-bar"><img src="assets/automart-logo.png" alt="AutoMart IM" /></div>
+<header>
+  <h1>🔧 Join the AutoMart IM Repairer Network</h1>
+  <p>Register your auto-repair shop so nearby drivers can find you when they break down.</p>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <form id="signupForm">
+      <label class="req">Shop / Business name</label>
+      <input type="text" id="shopName" required placeholder="e.g. Ade Auto Clinic" />
+
+      <div class="row">
+        <div>
+          <label class="req">Your name</label>
+          <input type="text" id="contactName" required placeholder="Contact person" />
+        </div>
+        <div>
+          <label class="req">Phone number</label>
+          <input type="tel" id="phone" required placeholder="080..." />
+        </div>
+      </div>
+
+      <label>Email (optional)</label>
+      <input type="email" id="email" placeholder="you@example.com" />
+
+      <label>Shop photo or logo (optional)</label>
+      <input type="file" id="logoFile" accept="image/*" />
+      <div class="hint">Upload a photo of your shop or your logo from this device (JPG/PNG, up to 3MB) — it'll show on your listing.</div>
+      <img id="logoPreview" class="logo-preview" alt="Logo preview" />
+      <div class="or-divider">…or paste a photo link instead:</div>
+      <input type="url" id="imageUrl" placeholder="https://…" />
+
+      <label class="req">Shop address</label>
+      <textarea id="address" rows="2" required placeholder="Street, area, city, state"></textarea>
+      <div class="locate-row">
+        <button type="button" class="btn-secondary" id="geocodeBtn">📍 Find on map</button>
+        <button type="button" class="btn-secondary" id="gpsBtn">Use my current location</button>
+      </div>
+      <div class="hint">Find your address on the map, then drag the pin to your exact location before submitting.</div>
+      <div id="map"></div>
+      <div class="hint" id="coordsHint"></div>
+
+      <label>Services offered</label>
+      <div class="services">
+        <label><input type="checkbox" value="Towing"> Towing</label>
+        <label><input type="checkbox" value="Battery / Jump-start"> Battery / Jump-start</label>
+        <label><input type="checkbox" value="Tyre repair"> Tyre repair</label>
+        <label><input type="checkbox" value="Engine repair"> Engine repair</label>
+        <label><input type="checkbox" value="Electrical"> Electrical</label>
+        <label><input type="checkbox" value="A/C repair"> A/C repair</label>
+        <label><input type="checkbox" value="Bodywork"> Bodywork</label>
+        <label><input type="checkbox" value="General service"> General service</label>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:8px;margin-top:22px;">
+        <input type="checkbox" id="isMobileCheckbox" style="width:auto;">
+        I'm a mobile repairer (no fixed shop) — I travel to customers
+      </label>
+      <div class="hint">Don't have a workshop? No problem — sign up as a mobile mechanic and drivers can call you out to their breakdown location instead of visiting a shop.</div>
+
+      <div id="mobileServicesWrap" style="display:none;margin-top:12px;">
+        <label>Mobile / roadside services (light jobs you can do on the spot)</label>
+        <div class="services" id="mobileServices">
+          <label><input type="checkbox" value="Battery jump-start"> Battery jump-start</label>
+          <label><input type="checkbox" value="Tyre change"> Tyre change</label>
+          <label><input type="checkbox" value="Fuel delivery"> Fuel delivery</label>
+          <label><input type="checkbox" value="Lockout / key issues"> Lockout / key issues</label>
+          <label><input type="checkbox" value="Basic diagnostics"> Basic diagnostics</label>
+          <label><input type="checkbox" value="Towing"> Towing</label>
+        </div>
+      </div>
+
+      <label>Callout / service price, ₦ (optional)</label>
+      <input type="text" inputmode="numeric" id="calloutPrice" placeholder="e.g. 5000" />
+      <div class="hint">Shown on your public profile as your starting price, and used when a car owner books and pays you through AutoMart IM via Paystack. Leave blank to show "Contact for pricing" instead.</div>
+
+      <button type="submit" class="btn-primary" id="submitBtn">Submit Registration</button>
+      <div class="status-box" id="statusBox"></div>
+    </form>
+  </div>
+</div>
+
+<footer>AutoMart IM Roadside Repairer Network &middot; Powered by Google Sheets</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* =========================================================================
+   Resilient map tile loader — inlined on every page (not a separate file)
+   so no page ever breaks if tiles.js gets left behind during hosting/copying.
+   ------------------------------------------------------------------------
+   Free raster tile providers occasionally stop working for reasons outside
+   our control: OpenStreetMap's own volunteer-run servers block IPs/networks
+   that exceed their usage policy, and CARTO's free basemaps now require an
+   account + API key. Rather than hard-code one provider and risk another
+   silent breakage, this tries a short list of free, no-API-key raster
+   providers in order, and automatically swaps to the next one if too many
+   tiles fail to load. Call attachResilientTileLayer(map) instead of
+   L.tileLayer(...).addTo(map) directly.
+   ========================================================================= */
+const TILE_PROVIDERS = [
+  {
+    name: 'Esri World Street Map',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    options: {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom',
+      maxZoom: 19
+    }
+  },
+  {
+    name: 'OpenStreetMap',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    options: { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19, subdomains: 'abc' }
+  },
+  {
+    name: 'Wikimedia Maps',
+    url: 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png',
+    options: { attribution: '&copy; OpenStreetMap contributors, style by Wikimedia', maxZoom: 19 }
+  }
+];
+
+const TILE_ERROR_THRESHOLD = 6; // tile failures before we give up on a provider
+
+function attachResilientTileLayer(map, startIndex) {
+  startIndex = startIndex || 0;
+  const idx = Math.min(startIndex, TILE_PROVIDERS.length - 1);
+  const provider = TILE_PROVIDERS[idx];
+  const layer = L.tileLayer(provider.url, provider.options);
+  let errorCount = 0;
+
+  layer.on('tileerror', () => {
+    errorCount++;
+    if (errorCount >= TILE_ERROR_THRESHOLD && idx < TILE_PROVIDERS.length - 1) {
+      console.warn(`[AutoMart IM] Map tiles from "${provider.name}" are failing — switching to "${TILE_PROVIDERS[idx + 1].name}".`);
+      map.removeLayer(layer);
+      attachResilientTileLayer(map, idx + 1);
+    }
+  });
+
+  layer.addTo(map);
+  return layer;
+}
+</script>
+<script>
+/* =========================================================================
+   CONFIG — paste your deployed Apps Script Web App URL here.
+   (Deploy → New deployment → Web app → copy the URL that ends in /exec)
+   ========================================================================= */
+const CONFIG = {
+  API_URL: "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
+};
+
+const MAX_LOGO_BYTES = 3 * 1024 * 1024; // 3MB
+
+let map, marker;
+let selectedLat = null, selectedLng = null;
+let selectedLogo = null; // { base64, mimeType, fileName }
+
+document.getElementById('isMobileCheckbox').addEventListener('change', (e) => {
+  document.getElementById('mobileServicesWrap').style.display = e.target.checked ? 'block' : 'none';
+});
+
+function ensureMap(lat, lng) {
+  const mapEl = document.getElementById('map');
+  mapEl.style.display = 'block';
+  if (!map) {
+    map = L.map('map').setView([lat, lng], 15);
+    attachResilientTileLayer(map);
+    marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      setCoords(pos.lat, pos.lng);
+    });
+    // Fix Leaflet sizing when container was previously display:none
+    setTimeout(() => map.invalidateSize(), 200);
+  } else {
+    map.setView([lat, lng], 15);
+    marker.setLatLng([lat, lng]);
+    map.invalidateSize();
+  }
+  setCoords(lat, lng);
+}
+
+function setCoords(lat, lng) {
+  selectedLat = lat;
+  selectedLng = lng;
+  document.getElementById('coordsHint').textContent =
+    `Pinned location: ${lat.toFixed(6)}, ${lng.toFixed(6)} — drag the marker to fine-tune.`;
+}
+
+// Logo/photo upload from the repairer's own device.
+document.getElementById('logoFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  const preview = document.getElementById('logoPreview');
+  if (!file) { selectedLogo = null; preview.style.display = 'none'; return; }
+
+  if (file.size > MAX_LOGO_BYTES) {
+    alert('That image is larger than 3MB. Please choose a smaller photo, or paste a photo link instead.');
+    e.target.value = '';
+    selectedLogo = null;
+    preview.style.display = 'none';
+    return;
+  }
+
+  try {
+    const { base64, mimeType, fileName } = await fileToBase64(file);
+    selectedLogo = { base64, mimeType, fileName };
+    preview.src = `data:${mimeType};base64,${base64}`;
+    preview.style.display = 'block';
+  } catch (err) {
+    alert('Could not read that image: ' + err.message);
+  }
+});
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      resolve({ base64, mimeType: file.type || 'image/jpeg', fileName: file.name });
+    };
+    reader.onerror = () => reject(reader.error || new Error('Read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Geocode a typed address using OpenStreetMap's free Nominatim service.
+document.getElementById('geocodeBtn').addEventListener('click', async () => {
+  const address = document.getElementById('address').value.trim();
+  if (!address) { alert('Type your shop address first.'); return; }
+  const btn = document.getElementById('geocodeBtn');
+  btn.textContent = 'Searching…';
+  btn.disabled = true;
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const results = await res.json();
+    if (!results.length) {
+      alert('Could not find that address. Try adding more detail (area, city) or use "Use my current location".');
+    } else {
+      ensureMap(parseFloat(results[0].lat), parseFloat(results[0].lon));
+    }
+  } catch (err) {
+    alert('Address lookup failed: ' + err.message);
+  } finally {
+    btn.textContent = '📍 Find on map';
+    btn.disabled = false;
+  }
+});
+
+// Or just use device GPS directly.
+document.getElementById('gpsBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) { alert('Your browser does not support GPS location.'); return; }
+  const btn = document.getElementById('gpsBtn');
+  btn.textContent = 'Locating…';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      btn.textContent = 'Use my current location';
+      ensureMap(pos.coords.latitude, pos.coords.longitude);
+    },
+    (err) => {
+      btn.textContent = 'Use my current location';
+      alert('Could not get GPS location: ' + err.message);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+});
+
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submitBtn');
+
+  if (selectedLat === null || selectedLng === null) {
+    showStatus('err', 'Please pin your shop location on the map before submitting ("Find on map" or "Use my current location").');
+    return;
+  }
+  if (CONFIG.API_URL.includes('PASTE_YOUR')) {
+    showStatus('err', 'The API_URL has not been configured yet — see the README for setup steps.');
+    return;
+  }
+
+  const services = Array.from(document.querySelectorAll('#signupForm .services input:checked'))
+    .filter(cb => !cb.closest('#mobileServices'))
+    .map(cb => cb.value);
+  const mobileServices = Array.from(document.querySelectorAll('#mobileServices input:checked')).map(cb => cb.value);
+  const isMobile = document.getElementById('isMobileCheckbox').checked;
+  const calloutPrice = document.getElementById('calloutPrice').value.trim();
+
+  const payload = {
+    action: 'signup',
+    data: {
+      shopName: document.getElementById('shopName').value.trim(),
+      contactName: document.getElementById('contactName').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      latitude: selectedLat,
+      longitude: selectedLng,
+      services: services,
+      isMobile: isMobile,
+      mobileServices: mobileServices,
+      calloutPrice: calloutPrice
+    }
+  };
+
+  if (selectedLogo) {
+    payload.data.imageBase64 = selectedLogo.base64;
+    payload.data.imageMimeType = selectedLogo.mimeType;
+    payload.data.imageFileName = selectedLogo.fileName;
+  } else {
+    payload.data.imageUrl = document.getElementById('imageUrl').value.trim();
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting…';
+
+  try {
+    const res = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.ok) {
+      const base = location.href.replace(/[^/]*$/, '');
+      const selfLink = `${base}update-location.html?id=${encodeURIComponent(result.id)}`;
+      const profileLink = `${base}profile.html?id=${encodeURIComponent(result.id)}`;
+      showStatus('pending', `✅ ${escapeHtml(result.message)}
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.08);">
+          <strong>Save this link</strong> — it's your personal page to update your live location any time you're out on a job (bookmark it, no login needed):<br>
+          <a href="${selfLink}" target="_blank" rel="noopener">${selfLink}</a>
+        </div>
+        <div style="margin-top:8px;">
+          Once approved, your public profile (shared with car owners) will be at:<br>
+          <a href="${profileLink}" target="_blank" rel="noopener">${profileLink}</a>
+        </div>`, true);
+      document.getElementById('signupForm').reset();
+      document.getElementById('logoPreview').style.display = 'none';
+      document.getElementById('mobileServicesWrap').style.display = 'none';
+      selectedLogo = null;
+      if (map) { document.getElementById('map').style.display = 'none'; }
+      selectedLat = selectedLng = null;
+      document.getElementById('coordsHint').textContent = '';
+    } else {
+      showStatus('err', 'Error: ' + result.error);
+    }
+  } catch (err) {
+    showStatus('err', 'Network error: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Registration';
+  }
+});
+
+function showStatus(type, msg, isHtml) {
+  const box = document.getElementById('statusBox');
+  box.className = 'status-box ' + type;
+  if (isHtml) box.innerHTML = msg; else box.textContent = msg;
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
